@@ -13,20 +13,16 @@ struct process{
 }typedef process;
 
 process* insertToList(process *p, int id, int e, int t);
-void splitString(char *str);
-void readFile(char *file);
+process* splitString(char *str, process *p);
+process* readFile(char *file, process *p);
 
 int main() {
     printf("Hello, World!\n");
     process *root = NULL;
-   // root = insertToList(root, 1,2,3);
-    //root = insertToList(root, 2,3,6);
+
     char buf[MAX];
-   // fgets(buf, MAX, stdin);
-    //printf("string is: %s\n", buf);
-    //char str[] = "strtok needs to be called several times to split a string";
-    //splitString(str);
-    readFile("input.txt");
+
+    root = readFile("input.txt", root);
 
     return 0;
 }
@@ -50,7 +46,7 @@ process* insertToList(process *p, int id, int e, int t){
     }
 }
 
-void readFile(char *file){
+process* readFile(char *file, process *p){
     FILE *fp = fopen("input.txt", "r");
     if(fp == NULL) {
         perror("Unable to open file!");
@@ -60,21 +56,22 @@ void readFile(char *file){
     char chunk[128];
 
     while(fgets(chunk, sizeof(chunk), fp) != NULL) {
-        splitString(chunk);
+        p = splitString(chunk, p);
         //fputs(chunk, stdout);
         //fputs("|*\n", stdout);  // marker string used to show where the content of the chunk array has ended
     }
 
     fclose(fp);
+    return p;
 }
 
-void splitString(char *str){
+process* splitString(char *str, process *p){
     int counter = 0;
     int init_size = strlen(str);
     char delim[] = " ";
     int id = 0;
     int e = 0;
-    int t;
+    int t = 0;
     char *ptr = strtok(str, delim);
 
     while(ptr != NULL)
@@ -98,5 +95,6 @@ void splitString(char *str){
         }
     }
     //create node and add to linked list.
-    counter = 0;
+    p = insertToList(p, id, e, t);
+    return p;
 }
