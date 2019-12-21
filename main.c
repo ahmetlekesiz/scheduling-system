@@ -15,14 +15,18 @@ struct process{
 process* insertToList(process *p, int id, int e, int t);
 process* splitString(char *str, process *p);
 process* readFile(char *file, process *p);
+int findEMax(process *p);
 
 int main() {
     printf("Hello, World!\n");
     process *root = NULL;
-
+    int q = 1;
+    int eMax = 0;
     char buf[MAX];
 
     root = readFile("input.txt", root);
+    eMax = findEMax(root);
+
 
     return 0;
 }
@@ -97,4 +101,17 @@ process* splitString(char *str, process *p){
     //create node and add to linked list.
     p = insertToList(p, id, e, t);
     return p;
+}
+
+//finding eMax value for beginning of program.
+int findEMax(process *p){
+    int temp = 0;
+    process *iter = p;
+    while(iter != NULL){
+        if(iter->e > temp){
+            temp = iter->e;
+        }
+        iter = iter->nextProcess;
+    }
+    return temp;
 }
