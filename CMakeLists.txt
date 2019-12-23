@@ -3,4 +3,4 @@ project(SchedulingSystem C)
 
 set(CMAKE_C_STANDARD 99)
 
-add_executable(SchedulingSystem main.c)
+add_executable(SchedulingSystem main.c binomial.c)

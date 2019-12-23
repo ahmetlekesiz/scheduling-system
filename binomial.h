@@ -26,5 +26,6 @@ typedef double ElementType;
         ElementType FindMin( BinQueue H );
         int IsEmpty( BinQueue H );
         int IsFull( BinQueue H );
+        BinTree printTree(BinTree p, BinTree *r, int i);
         #endif
 /* END */

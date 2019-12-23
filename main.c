@@ -47,6 +47,15 @@ int main() {
     printf("\n*****\n");
     printList(root);
 
+    BinQueue H1, H2;
+    BinTree p, r[20]={NULL};
+    ElementType Item;
+    char ch;
+    int i;
+    H1 = Initialize( );
+    Item = 2;
+    Insert(Item, H1);
+
     return 0;
 }
 
