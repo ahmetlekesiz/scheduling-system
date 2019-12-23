@@ -17,8 +17,23 @@ process* splitString(char *str, process *p);
 process* readFile(char *file, process *p);
 int findEMax(process *p);
 
+
+void removeFirstProcess(process **root){
+    process* temp = *root;
+    temp = temp->nextProcess;
+    free(*root);
+    *root = temp;
+}
+
+void printList(process *root){
+    process *temp = root;
+    while(temp != NULL){
+        printf("%d ", temp->id);
+        temp = temp->nextProcess;
+    }
+}
+
 int main() {
-    printf("Hello, World!\n");
     process *root = NULL;
     int q = 1;
     int eMax = 0;
@@ -27,6 +42,10 @@ int main() {
     root = readFile("input.txt", root);
     eMax = findEMax(root);
 
+    printList(root);
+    removeFirstProcess(&root);
+    printf("\n*****\n");
+    printList(root);
 
     return 0;
 }
@@ -61,8 +80,6 @@ process* readFile(char *file, process *p){
 
     while(fgets(chunk, sizeof(chunk), fp) != NULL) {
         p = splitString(chunk, p);
-        //fputs(chunk, stdout);
-        //fputs("|*\n", stdout);  // marker string used to show where the content of the chunk array has ended
     }
 
     fclose(fp);
@@ -83,17 +100,14 @@ process* splitString(char *str, process *p){
         if(counter == 0){
             ptr++;
             id = atoi(ptr);
-            printf("%s\n", ptr);
             counter++;
             ptr = strtok(NULL, delim);
         }else if(counter == 1){
             e = atoi(ptr);
-            printf("%s\n", ptr);
             counter++;
             ptr = strtok(NULL, delim);
         }else if(counter == 2){
             t = atoi(ptr);
-            printf("%s\n", ptr);
             counter++;
             ptr = strtok(NULL, delim);
         }
