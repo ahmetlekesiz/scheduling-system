@@ -2,6 +2,8 @@
 #include <string.h>
 #include "binomial.h"
 #include "fatal.h"
+#include <math.h>
+
 
 #define MAX 30
 
@@ -9,6 +11,7 @@ struct process{
     int id;
     int e; //execution time
     int t; //arrival time
+    int bhCounter;
     struct process *nextProcess;
 }typedef process;
 
@@ -16,15 +19,12 @@ process* insertToList(process *p, int id, int e, int t);
 process* splitString(char *str, process *p);
 process* readFile(char *file, process *p);
 int findEMax(process *p);
-
-
 void removeFirstProcess(process **root){
     process* temp = *root;
     temp = temp->nextProcess;
     free(*root);
     *root = temp;
 }
-
 void printList(process *root){
     process *temp = root;
     while(temp != NULL){
@@ -32,6 +32,8 @@ void printList(process *root){
         temp = temp->nextProcess;
     }
 }
+double calculateC(process *node, int eI, int eMax);
+double calculatePV(process *node, int eI, int t, int eMax);
 
 int main() {
     process *root = NULL;
@@ -53,7 +55,25 @@ int main() {
     char ch;
     int i;
     H1 = Initialize( );
+    Item = 13;
+    Insert(Item, H1);
+    Item = 4;
+    Insert(Item, H1);
+    Item = 10;
+    Insert(Item, H1);
     Item = 2;
+    Insert(Item, H1);
+    Item = 7;
+    Insert(Item, H1);
+    Item = 9;
+    Insert(Item, H1);
+    Item = 15;
+    Insert(Item, H1);
+    Item = 1;
+    Insert(Item, H1);
+    Item = 5;
+    Insert(Item, H1);
+    Item = 11;
     Insert(Item, H1);
 
     return 0;
@@ -138,3 +158,22 @@ int findEMax(process *p){
     }
     return temp;
 }
+
+
+double calculateC(process *node, int eI, int eMax){
+    if(node->bhCounter == 0){
+        return 1;
+    }else{
+        double calculation = -pow((2*eI)/(3*eMax), 3);
+        return exp(calculation);
+    }
+}
+
+double calculatePV(process *node, int eI, int t, int eMax){
+    if(node->e == eI){
+        return t;
+    }else{
+        return calculateC(node, eI, eMax);
+    }
+}
+

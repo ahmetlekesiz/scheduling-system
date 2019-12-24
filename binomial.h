@@ -1,4 +1,3 @@
-typedef double ElementType;
         #define Infinity (6000000000L)
 
         #ifndef _BinHeap_H
@@ -12,6 +11,7 @@ typedef double ElementType;
 	//	#define MaxTrees (30)   /* Stores 2^30 -1 items */
     //  #define Capacity (1073741823)
 
+        typedef double ElementType;
         struct BinNode;
         typedef struct BinNode *BinTree;
         struct Collection;
