@@ -1,3 +1,4 @@
+        //typedef double ElementType;
         #define Infinity (6000000000L)
 
         #ifndef _BinHeap_H
@@ -11,11 +12,18 @@
 	//	#define MaxTrees (30)   /* Stores 2^30 -1 items */
     //  #define Capacity (1073741823)
 
-        typedef double ElementType;
         struct BinNode;
         typedef struct BinNode *BinTree;
         struct Collection;
         typedef struct Collection *BinQueue;
+
+        struct ElementType{
+            int id;
+            int e;
+            int t; //arrival time
+            int bhCounter;
+            double pValue;
+        }typedef ElementType;
 
         BinQueue Initialize( void );
         void Destroy( BinQueue H );
@@ -26,6 +34,5 @@
         ElementType FindMin( BinQueue H );
         int IsEmpty( BinQueue H );
         int IsFull( BinQueue H );
-        BinTree printTree(BinTree p, BinTree *r, int i);
         #endif
 /* END */

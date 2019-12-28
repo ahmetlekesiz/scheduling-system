@@ -34,6 +34,7 @@ void printList(process *root){
 }
 double calculateC(process *node, int eI, int eMax);
 double calculatePV(process *node, int eI, int t, int eMax);
+ElementType* createElementType(int id, int e, int t, double pValue);
 
 int main() {
     process *root = NULL;
@@ -51,32 +52,31 @@ int main() {
 
     BinQueue H1, H2;
     BinTree p, r[20]={NULL};
-    ElementType Item;
+    ElementType *Item;
     char ch;
     int i;
     H1 = Initialize( );
-    Item = 13;
-    Insert(Item, H1);
-    Item = 4;
-    Insert(Item, H1);
-    Item = 10;
-    Insert(Item, H1);
-    Item = 2;
-    Insert(Item, H1);
-    Item = 7;
-    Insert(Item, H1);
-    Item = 9;
-    Insert(Item, H1);
-    Item = 15;
-    Insert(Item, H1);
-    Item = 1;
-    Insert(Item, H1);
-    Item = 5;
-    Insert(Item, H1);
-    Item = 11;
-    Insert(Item, H1);
+    Item = createElementType(1,3,0,7);
+    Insert(*Item, H1);
+    Item = createElementType(2,5,1,2);
+    Insert(*Item, H1);
+    Item = createElementType(3,7,2,4);
+    Insert(*Item, H1);
+    Item = createElementType(4,3,3,12);
+    Insert(*Item, H1);
 
+    ElementType minItem = FindMin(H1);
+    DeleteMin(H1);
     return 0;
+}
+
+ElementType* createElementType(int id, int e, int t, double pValue){
+    ElementType *node = malloc(sizeof(ElementType));
+    node->id = id;
+    node->e = e;
+    node->t = t;
+    node->pValue = pValue;
+    return node;
 }
 
 process* insertToList(process *p, int id, int e, int t){
@@ -158,7 +158,6 @@ int findEMax(process *p){
     }
     return temp;
 }
-
 
 double calculateC(process *node, int eI, int eMax){
     if(node->bhCounter == 0){
