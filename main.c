@@ -11,6 +11,7 @@ struct process{
     int id;
     int e; //execution time
     int t; //arrival time
+    int wt; //waiting time
     int bhCounter;
     struct process *nextProcess;
 }typedef process;
@@ -35,26 +36,30 @@ void printList(process *root){
 double calculateC(process *node, int eI, int eMax);
 double calculatePV(process *node, int eI, int t, int eMax);
 ElementType* createElementType(int id, int e, int t, double pValue);
+int findMaxArrivingTime(process *root);
+process* findProcessByTime(process *root, int t);
+void deleteNode(process **root, int id);
 
 int main() {
     process *root = NULL;
     int q = 1;
     int eMax = 0;
-    char buf[MAX];
-
+    int timeCounter = 0;
     root = readFile("input.txt", root);
     eMax = findEMax(root);
+    int timeMax = findMaxArrivingTime(root);
+    int uPFlag = 0;
 
     printList(root);
-    removeFirstProcess(&root);
-    printf("\n*****\n");
-    printList(root);
+    deleteNode(&root, 2);
+    deleteNode(&root, 1);
 
+
+    /*
     BinQueue H1, H2;
     BinTree p, r[20]={NULL};
     ElementType *Item;
-    char ch;
-    int i;
+
     H1 = Initialize( );
     Item = createElementType(1,3,0,7);
     Insert(*Item, H1);
@@ -65,8 +70,25 @@ int main() {
     Item = createElementType(4,3,3,12);
     Insert(*Item, H1);
 
-    ElementType minItem = FindMin(H1);
-    DeleteMin(H1);
+     */
+
+    //initialize parameters; q, eMax
+    //while there exist processes in the input list
+    //      put the next process i arrived in uP
+    //      while uP is allocated
+    //          enqueue incoming processes by their priority
+    //          if e>q
+    //              preempt current process
+    //              reassign new priority
+    //              re-insert process into BH
+    //          Else release uP
+    //          for each process i in BH
+    //              Update WTi
+    //          DeleteMin
+    //          Assign uP to this process
+    //      end of While
+    //end of While
+
     return 0;
 }
 
@@ -77,6 +99,17 @@ ElementType* createElementType(int id, int e, int t, double pValue){
     node->t = t;
     node->pValue = pValue;
     return node;
+}
+
+process* findProcessByTime(process *root, int t){
+    process *iter = root;
+    while(iter != NULL){
+        if(iter->t == t){
+            return iter;
+        }
+        iter = iter->nextProcess;
+    }
+    return NULL;
 }
 
 process* insertToList(process *p, int id, int e, int t){
@@ -96,6 +129,47 @@ process* insertToList(process *p, int id, int e, int t){
         iter->nextProcess = node;
         return p;
     }
+}
+
+void deleteNode(process **root, int id){
+    process *temp = *root, *prev;
+
+    // If head node itself holds the key to be deleted
+    if (temp != NULL && temp->id == id)
+    {
+        *root = temp->nextProcess;   // Changed head
+        free(temp);               // free old head
+        return;
+    }
+
+    // Search for the key to be deleted, keep track of the
+    // previous node as we need to change 'prev->next'
+    while (temp != NULL && temp->id != id)
+    {
+        prev = temp;
+        temp = temp->nextProcess;
+    }
+
+    // If key was not present in linked list
+    if (temp == NULL) return;
+
+    // Unlink the node from linked list
+    prev->nextProcess = temp->nextProcess;
+
+    free(temp);  // Free memory
+
+}
+
+int findMaxArrivingTime(process *root){
+    int maxT = root->t;
+    process *iter = root;
+    while(iter != NULL){
+        if(iter->t > maxT){
+            maxT = iter->t;
+        }
+        iter = iter->nextProcess;
+    }
+    return maxT;
 }
 
 process* readFile(char *file, process *p){
