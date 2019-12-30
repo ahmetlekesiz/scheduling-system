@@ -12,6 +12,7 @@ struct process{
     int e; //execution time
     int t; //arrival time
     int wt; //waiting time
+    double pV;
     int bhCounter;
     struct process *nextProcess;
 }typedef process;
@@ -26,42 +27,36 @@ void removeFirstProcess(process **root){
     free(*root);
     *root = temp;
 }
-void printList(process *root){
-    process *temp = root;
-    while(temp != NULL){
-        printf("%d ", temp->id);
-        temp = temp->nextProcess;
-    }
-}
+void printList(process *root);
 double calculateC(process *node, int eI, int eMax);
 double calculatePV(process *node, int eI, int t, int eMax);
 ElementType* createElementType(int id, int e, int t, double pValue);
 int findMaxArrivingTime(process *root);
 process* findProcessByTime(process *root, int t);
 void deleteNode(process **root, int id);
+int numberInputList(process *root);
 
 int main() {
-    process *root = NULL;
+    process *inputRoot = NULL;
+    process *uP = NULL;
+    process *completedRoot = NULL;
     int q = 1;
     int eMax = 0;
-    int timeCounter = 0;
-    root = readFile("input.txt", root);
-    eMax = findEMax(root);
-    int timeMax = findMaxArrivingTime(root);
+    inputRoot = readFile("input.txt", inputRoot);
+    eMax = findEMax(inputRoot);
+    int timeMax = findMaxArrivingTime(inputRoot);
     int uPFlag = 0;
 
-    printList(root);
-    deleteNode(&root, 2);
-    deleteNode(&root, 1);
+    //printList(inputRoot);
+    deleteNode(&inputRoot, 2);
+    deleteNode(&inputRoot, 1);
 
-
-    /*
     BinQueue H1, H2;
     BinTree p, r[20]={NULL};
     ElementType *Item;
 
     H1 = Initialize( );
-    Item = createElementType(1,3,0,7);
+   Item = createElementType(1,3,0,7);
     Insert(*Item, H1);
     Item = createElementType(2,5,1,2);
     Insert(*Item, H1);
@@ -70,7 +65,10 @@ int main() {
     Item = createElementType(4,3,3,12);
     Insert(*Item, H1);
 
-     */
+    BinTree p2, r2[20]={NULL};
+    p2=H1->TheTrees[2];
+    //printTree(p2, r2, 0);
+
 
     //initialize parameters; q, eMax
     //while there exist processes in the input list
@@ -88,6 +86,72 @@ int main() {
     //          Assign uP to this process
     //      end of While
     //end of While
+    double newPriority = 0;
+    int numberOfInput = 0;
+    int timeCounter = 0;
+    int maxArrivingTime = 0;
+
+
+    while(inputRoot != NULL){
+        //put the next process i arrived in uP
+        //Find the next process
+        process *nextProcess = NULL;
+        maxArrivingTime = findMaxArrivingTime(inputRoot);
+        while(timeCounter <= maxArrivingTime){
+            nextProcess = findProcessByTime(inputRoot, timeCounter);
+            if(nextProcess != NULL){
+                break;
+            }else{
+                timeCounter++;
+            }
+        }
+        //Put the process to uP
+        uP = insertToList(uP, nextProcess->id, nextProcess->e, nextProcess->t);
+        //delete process from input list
+        deleteNode(inputRoot, nextProcess->id);
+        //while uP is allocated
+        while(uP != NULL){
+            //enqueue incoming processes by their priority
+            process *iterInput = inputRoot;
+            while(iterInput != NULL){
+                if(iterInput->t < timeCounter){
+                    double newPValue = 0;
+                    newPValue = calculatePV(iterInput, iterInput->e, iterInput->t, eMax);
+                    ElementType *Item = createElementType(iterInput->id, iterInput->e, iterInput->t, newPValue);
+                    Insert(*Item, H1);
+                    deleteNode(&inputRoot, iterInput->id);
+                }
+                iterInput = iterInput->nextProcess;
+            }
+            //if e>q
+            if(uP->e > q){
+                //reassign new priority
+                timeCounter = timeCounter + q;
+                newPriority = calculatePV(uP, uP->e, uP->t, eMax);
+                uP->pV = newPriority;
+                //re-insert process into BH
+                Item = createElementType(uP->id,uP->e,timeCounter,newPriority);
+                Insert(*Item, H1);
+                //preempt current process
+                uP = NULL;
+                //for each process i in BH
+                //Update WTi
+                increaseWaitingTime(H1, 0, q);
+            }else{
+                timeCounter = timeCounter + uP->e;
+                //for each process i in BH
+                //Update WTi
+                increaseWaitingTime(H1, 0, uP->e);
+                completedRoot = insertToList(completedRoot, uP->id, uP->e, uP->t);
+                //release uP
+                uP = NULL;
+            }
+            //DeleteMin
+            ElementType minItem = DeleteMin(H1);
+            //Assigns min process on BH to uP
+            uP = insertToList(uP, minItem.id, minItem.e, minItem.t);
+        }
+    }
 
     return 0;
 }
@@ -105,13 +169,26 @@ process* findProcessByTime(process *root, int t){
     process *iter = root;
     while(iter != NULL){
         if(iter->t == t){
-            return iter;
+            return iter->id;
         }
         iter = iter->nextProcess;
     }
     return NULL;
 }
 
+int findTMax(process *root){
+    process *iter = root;
+    int tMax = 0;
+    while(iter != NULL){
+        if(iter->t > tMax){
+            tMax = iter->t;
+        }
+        iter = iter->nextProcess;
+    }
+    return tMax;
+}
+
+//TODO eksik parametleri ekle. Örne?in: waiting time.
 process* insertToList(process *p, int id, int e, int t){
     process *node = malloc(sizeof(process));
     node->id = id;
@@ -158,6 +235,14 @@ void deleteNode(process **root, int id){
 
     free(temp);  // Free memory
 
+}
+
+void printList(process *root){
+    process *temp = root;
+    while(temp != NULL){
+        printf("%d ", temp->id);
+        temp = temp->nextProcess;
+    }
 }
 
 int findMaxArrivingTime(process *root){
@@ -250,3 +335,12 @@ double calculatePV(process *node, int eI, int t, int eMax){
     }
 }
 
+int numberInputList(process *root){
+    process *iter = root;
+    int counter = 0;
+    while(iter != NULL){
+        counter++;
+        iter = iter->nextProcess;
+    }
+    return counter;
+}

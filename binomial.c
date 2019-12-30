@@ -12,11 +12,11 @@
             Position    NextSibling;
         };
 
-        struct Collection
+/*        struct Collection
         {
             int CurrentSize;
             BinTree TheTrees[ MaxTrees ];
-        };
+        };*/
 
         BinQueue
         Initialize( void )
@@ -266,12 +266,12 @@
 		  for ( j=0; j<i; j++ ) t[j]= r[j];
 		  i=0;
 		  if (p!=NULL) { 
-		    printf("& %2.1lf ",p->Item);
+		    printf("& %d ",p->Item.id);
 			q=p->NextSibling;
 			j=0;
 			do {
 			  while (q!=NULL) { 
-			    printf("%2.1lf ",q->Item); 
+			    printf("%d ",q->Item.id);
 			    if (q->LeftChild != NULL) { r[i]=q->LeftChild; i++; }
 			    q=q->NextSibling;
 			  }
@@ -283,33 +283,66 @@
 		  printf("\n");
 		  printTree(p->LeftChild, r, i);
 		}
-		
-				
-			/*
-		main()
-		{
-		  BinQueue H1, H2;
-		  BinTree p, r[20]={NULL};
-		  ElementType Item;
-		  char ch;
-		  int i;
-		  H1 = Initialize( );
-          		  
-		  do {
-		    printf("choice: \n"); scanf("%c",&ch);
-		    switch (ch) {
-			  case 'i': Item.pValue=(0.0001)*(rand()%10000);
-			  Insert(Item, H1); printf("Item=%5.1lf",Item); if (IsEmpty( H1 )) printf("empty!");
-			            break;
-			  case 'd': if (!IsEmpty( H1 )) Item=DeleteMin( H1 );
-                        break;
-			  case 'p': for (i=0; i<MaxTrees; i++) {
-			              p=H1->TheTrees[i];
-						  printTree(p, r, 0); printf("/\n");
-						}  
-						break;
-			  case 'x': ;			
-			}	
-		  }	while ( ch!='x');
-		}                                           */
+
+        BinTree increaseWaitingTimeBinomialTree(BinTree p, BinTree *r, int i, int increment)
+       {
+           BinTree t[20]={NULL}, q; int j;
+           for ( j=0; j<i; j++ ) t[j]= r[j];
+           i=0;
+           if (p!=NULL) {
+               //increase waiting time
+               p->Item.wt = p->Item.wt + increment;
+               q=p->NextSibling;
+               j=0;
+               do {
+                   while (q!=NULL) {
+                       //increase waiting time
+                       q->Item.wt = q->Item.wt + increment;
+                       if (q->LeftChild != NULL) { r[i]=q->LeftChild; i++; }
+                       q=q->NextSibling;
+                   }
+                   q=t[j++];
+               } while (q!=NULL);
+           }
+           else return NULL;
+           //for (j=0; j<i; j++) t[j]=NULL;
+           printf("\n");
+           printTree(p->LeftChild, r, i);
+       }
+
+        void increaseWaitingTime(BinQueue H, int i, int increment){
+            BinTree p2, r2[20]={NULL};
+            for (int i = 0; i < 12 ; ++i) {
+                p2=H->TheTrees[i];
+                increaseWaitingTimeBinomialTree(p2, r2, i, increment);
+            }
+        };
+
+       /*
+   main()
+   {
+     BinQueue H1, H2;
+     BinTree p, r[20]={NULL};
+     ElementType Item;
+     char ch;
+     int i;
+     H1 = Initialize( );
+
+     do {
+       printf("choice: \n"); scanf("%c",&ch);
+       switch (ch) {
+         case 'i': Item.pValue=(0.0001)*(rand()%10000);
+         Insert(Item, H1); printf("Item=%5.1lf",Item); if (IsEmpty( H1 )) printf("empty!");
+                   break;
+         case 'd': if (!IsEmpty( H1 )) Item=DeleteMin( H1 );
+                   break;
+         case 'p': for (i=0; i<MaxTrees; i++) {
+                     p=H1->TheTrees[i];
+                     printTree(p, r, 0); printf("/\n");
+                   }
+                   break;
+         case 'x': ;
+       }
+     }	while ( ch!='x');
+   }                                           */
 /* END */

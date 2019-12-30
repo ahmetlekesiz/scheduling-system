@@ -14,8 +14,12 @@
 
         struct BinNode;
         typedef struct BinNode *BinTree;
-        struct Collection;
+        struct Collection{
+            int CurrentSize;
+            BinTree TheTrees[ MaxTrees ];
+        };
         typedef struct Collection *BinQueue;
+
 
         struct ElementType{
             int id;
@@ -23,6 +27,7 @@
             int t; //arrival time
             int bhCounter;
             double pValue;
+            int wt; //waiting time
         }typedef ElementType;
 
         BinQueue Initialize( void );
@@ -34,5 +39,8 @@
         ElementType FindMin( BinQueue H );
         int IsEmpty( BinQueue H );
         int IsFull( BinQueue H );
-        #endif
+        BinTree printTree(BinTree p, BinTree *r, int i);
+        BinTree increaseWaitingTimeBinomialTree(BinTree p, BinTree *r, int i, int increment);
+        void increaseWaitingTime(BinQueue H, int i, int increment);
+#endif
 /* END */
