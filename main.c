@@ -169,7 +169,7 @@ process* findProcessByTime(process *root, int t){
     process *iter = root;
     while(iter != NULL){
         if(iter->t == t){
-            return iter->id;
+            return iter;
         }
         iter = iter->nextProcess;
     }
