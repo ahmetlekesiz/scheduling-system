@@ -44,8 +44,6 @@ int main() {
     int eMax = 0;
     inputRoot = readFile("input.txt", inputRoot);
     eMax = findEMax(inputRoot);
-    int timeMax = findMaxArrivingTime(inputRoot);
-    int uPFlag = 0;
 
     //printList(inputRoot);
     deleteNode(&inputRoot, 2);
@@ -56,6 +54,7 @@ int main() {
     ElementType *Item;
 
     H1 = Initialize( );
+    /*
    Item = createElementType(1,3,0,7);
     Insert(*Item, H1);
     Item = createElementType(2,5,1,2);
@@ -63,7 +62,7 @@ int main() {
     Item = createElementType(3,7,2,4);
     Insert(*Item, H1);
     Item = createElementType(4,3,3,12);
-    Insert(*Item, H1);
+    Insert(*Item, H1); */
 
     BinTree p2, r2[20]={NULL};
     p2=H1->TheTrees[2];
@@ -87,7 +86,6 @@ int main() {
     //      end of While
     //end of While
     double newPriority = 0;
-    int numberOfInput = 0;
     int timeCounter = 0;
     int maxArrivingTime = 0;
 
@@ -116,6 +114,10 @@ int main() {
             while(iterInput != NULL){
                 if(iterInput->t < timeCounter){
                     double newPValue = 0;
+                    //calculate the priority value
+                    //  check if there is a process that has the same e value
+                    //      if exist take tArrival
+                    //      else c(eI)*eI (Implement the c(eI) for first insertion and further insertions).
                     newPValue = calculatePV(iterInput, iterInput->e, iterInput->t, eMax);
                     ElementType *Item = createElementType(iterInput->id, iterInput->e, iterInput->t, newPValue);
                     Insert(*Item, H1);
@@ -129,14 +131,14 @@ int main() {
                 timeCounter = timeCounter + q;
                 newPriority = calculatePV(uP, uP->e, uP->t, eMax);
                 uP->pV = newPriority;
+                //for each process i in BH
+                //Update WTi
+                increaseWaitingTime(H1, 0, q);
                 //re-insert process into BH
                 Item = createElementType(uP->id,uP->e,timeCounter,newPriority);
                 Insert(*Item, H1);
                 //preempt current process
                 uP = NULL;
-                //for each process i in BH
-                //Update WTi
-                increaseWaitingTime(H1, 0, q);
             }else{
                 timeCounter = timeCounter + uP->e;
                 //for each process i in BH
