@@ -108,7 +108,7 @@ int main() {
         //Put the process to uP
         uP = insertToList(uP, nextProcess->id, nextProcess->e, nextProcess->t);
         //delete process from input list
-        deleteNode(inputRoot, nextProcess->id);
+        deleteNode(&inputRoot, nextProcess->id);
         //while uP is allocated
         while(uP != NULL){
             //enqueue incoming processes by their priority
