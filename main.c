@@ -17,7 +17,7 @@ struct process{
     struct process *nextProcess;
 }typedef process;
 
-process* insertToList(process *p, int id, int e, int t);
+process* insertToList(process *p, int id, int e, int t, int wT, int bhCounter);
 process* splitString(char *str, process *p);
 process* readFile(char *file, process *p);
 int findEMax(process *p);
@@ -88,6 +88,7 @@ int main() {
     double newPriority = 0;
     int timeCounter = 0;
     int maxArrivingTime = 0;
+    int processingTime = 0;
 
 
     while(inputRoot != NULL){
@@ -103,14 +104,16 @@ int main() {
                 timeCounter++;
             }
         }
+        nextProcess->bhCounter = 1;
         //Put the process to uP
-        uP = insertToList(uP, nextProcess->id, nextProcess->e, nextProcess->t);
+        uP = insertToList(uP, nextProcess->id, nextProcess->e, nextProcess->t, nextProcess->wt, nextProcess->bhCounter);
+        processingTime = 0;
         //delete process from input list
         deleteNode(&inputRoot, nextProcess->id);
         //while uP is allocated
         while(uP != NULL){
             //enqueue incoming processes by their priority
-            process *iterInput = inputRoot;
+            /*process *iterInput = inputRoot;
             while(iterInput != NULL){
                 if(iterInput->t < timeCounter){
                     double newPValue = 0;
@@ -124,34 +127,37 @@ int main() {
                     deleteNode(&inputRoot, iterInput->id);
                 }
                 iterInput = iterInput->nextProcess;
-            }
+            }*/
             //if e>q
             if(uP->e > q){
                 //reassign new priority
-                timeCounter = timeCounter + q;
-                newPriority = calculatePV(uP, uP->e, uP->t, eMax);
-                uP->pV = newPriority;
+                timeCounter = timeCounter + 1;
+                processingTime = processingTime + 1;
                 //for each process i in BH
                 //Update WTi
-                increaseWaitingTime(H1, 0, q);
-                //re-insert process into BH
-                Item = createElementType(uP->id,uP->e,timeCounter,newPriority);
-                Insert(*Item, H1);
-                //preempt current process
-                uP = NULL;
+                increaseWaitingTime(H1, 0, 1);
+                if(processingTime == q){
+                    newPriority = calculatePV(uP, uP->e, uP->t, eMax);
+                    uP->pV = newPriority;
+                    //re-insert process into BH
+                    Item = createElementType(uP->id,uP->e,timeCounter,newPriority);
+                    Insert(*Item, H1);
+                    //preempt current process
+                    uP = NULL;
+                }
             }else{
                 timeCounter = timeCounter + uP->e;
                 //for each process i in BH
                 //Update WTi
                 increaseWaitingTime(H1, 0, uP->e);
-                completedRoot = insertToList(completedRoot, uP->id, uP->e, uP->t);
+                completedRoot = insertToList(completedRoot, uP->id, uP->e, uP->t, uP->wt, uP->bhCounter);
                 //release uP
                 uP = NULL;
             }
             //DeleteMin
             ElementType minItem = DeleteMin(H1);
             //Assigns min process on BH to uP
-            uP = insertToList(uP, minItem.id, minItem.e, minItem.t);
+            uP = insertToList(uP, minItem.id, minItem.e, minItem.t, minItem.wt, minItem.bhCounter);
         }
     }
 
@@ -191,11 +197,13 @@ int findTMax(process *root){
 }
 
 //TODO eksik parametleri ekle. Örne?in: waiting time.
-process* insertToList(process *p, int id, int e, int t){
+process* insertToList(process *p, int id, int e, int t, int wT, int bhCounter){
     process *node = malloc(sizeof(process));
     node->id = id;
     node->e = e;
     node->t = t;
+    node->wt = wT;
+    node->bhCounter = bhCounter;
     node->nextProcess = NULL;
 
     if(p == NULL){
@@ -303,7 +311,7 @@ process* splitString(char *str, process *p){
         }
     }
     //create node and add to linked list.
-    p = insertToList(p, id, e, t);
+    p = insertToList(p, id, e, t, 0, 0);
     return p;
 }
 
@@ -324,17 +332,17 @@ double calculateC(process *node, int eI, int eMax){
     if(node->bhCounter == 0){
         return 1;
     }else{
-        double calculation = -pow((2*eI)/(3*eMax), 3);
-        return exp(calculation);
+        double top = 2*eI;
+        double bottom = 3*eMax;
+        double division = top/bottom;
+        double calculation = -pow(division, 3);
+        return 1/exp(calculation);
     }
 }
 
 double calculatePV(process *node, int eI, int t, int eMax){
-    if(node->e == eI){
-        return t;
-    }else{
-        return calculateC(node, eI, eMax);
-    }
+        return calculateC(node, eI, eMax)*eI;
+        //TODO if eI == eJ return tArrival!
 }
 
 int numberInputList(process *root){
