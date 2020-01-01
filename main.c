@@ -12,6 +12,7 @@ struct process{
     int e; //execution time
     int t; //arrival time
     int wt; //waiting time
+    int eProcess;
     double pV;
     int bhCounter;
     struct process *nextProcess;
@@ -28,71 +29,29 @@ void removeFirstProcess(process **root){
     *root = temp;
 }
 void printList(process *root);
-double calculateC(process *node, int eI, int eMax);
-double calculatePV(process *node, int eI, int t, int eMax);
-ElementType* createElementType(int id, int e, int t, double pValue);
+ElementType* createElementType(int id, int e, int t, double pValue, int eProcess, int bhCounter);
 int findMaxArrivingTime(process *root);
 process* findProcessByTime(process *root, int t);
 void deleteNode(process **root, int id);
 int numberInputList(process *root);
+double cValue(process *node, int eI, int eMax);
+double calculatePriority(process *node, int e, int t, int eMax);
 
 int main() {
-    process *inputRoot = NULL;
-    process *uP = NULL;
-    process *completedRoot = NULL;
+    process *inputRoot = NULL, *uP = NULL, *completedRoot = NULL;
     int q = 1;
     int eMax = 0;
     inputRoot = readFile("input.txt", inputRoot);
     eMax = findEMax(inputRoot);
 
-    //printList(inputRoot);
-    deleteNode(&inputRoot, 2);
-    deleteNode(&inputRoot, 1);
-
-    BinQueue H1, H2;
-    BinTree p, r[20]={NULL};
+    BinQueue H1 = Initialize();
     ElementType *Item;
 
-    H1 = Initialize( );
-    /*
-   Item = createElementType(1,3,0,7);
-    Insert(*Item, H1);
-    Item = createElementType(2,5,1,2);
-    Insert(*Item, H1);
-    Item = createElementType(3,7,2,4);
-    Insert(*Item, H1);
-    Item = createElementType(4,3,3,12);
-    Insert(*Item, H1); */
-
-    BinTree p2, r2[20]={NULL};
-    p2=H1->TheTrees[2];
-    //printTree(p2, r2, 0);
-
-
-    //initialize parameters; q, eMax
-    //while there exist processes in the input list
-    //      put the next process i arrived in uP
-    //      while uP is allocated
-    //          enqueue incoming processes by their priority
-    //          if e>q
-    //              preempt current process
-    //              reassign new priority
-    //              re-insert process into BH
-    //          Else release uP
-    //          for each process i in BH
-    //              Update WTi
-    //          DeleteMin
-    //          Assign uP to this process
-    //      end of While
-    //end of While
-    double newPriority = 0;
     int timeCounter = 0;
     int maxArrivingTime = 0;
-    int processingTime = 0;
-
+    double priority = 0;
 
     while(inputRoot != NULL){
-        //put the next process i arrived in uP
         //Find the next process
         process *nextProcess = NULL;
         maxArrivingTime = findMaxArrivingTime(inputRoot);
@@ -104,71 +63,68 @@ int main() {
                 timeCounter++;
             }
         }
-        nextProcess->bhCounter = 1;
         //Put the process to uP
-        uP = insertToList(uP, nextProcess->id, nextProcess->e, nextProcess->t, nextProcess->wt, nextProcess->bhCounter);
-        processingTime = 0;
-        //delete process from input list
-        deleteNode(&inputRoot, nextProcess->id);
+        if(nextProcess != NULL){
+            uP = insertToList(uP, nextProcess->id, nextProcess->e, nextProcess->t, nextProcess->wt, nextProcess->bhCounter);
+            deleteNode(&inputRoot, nextProcess->id);
+        }
         //while uP is allocated
         while(uP != NULL){
-            //enqueue incoming processes by their priority
-            /*process *iterInput = inputRoot;
-            while(iterInput != NULL){
-                if(iterInput->t < timeCounter){
-                    double newPValue = 0;
-                    //calculate the priority value
-                    //  check if there is a process that has the same e value
-                    //      if exist take tArrival
-                    //      else c(eI)*eI (Implement the c(eI) for first insertion and further insertions).
-                    newPValue = calculatePV(iterInput, iterInput->e, iterInput->t, eMax);
-                    ElementType *Item = createElementType(iterInput->id, iterInput->e, iterInput->t, newPValue);
-                    Insert(*Item, H1);
-                    deleteNode(&inputRoot, iterInput->id);
-                }
-                iterInput = iterInput->nextProcess;
-            }*/
             //if e>q
             if(uP->e > q){
-                //reassign new priority
-                timeCounter = timeCounter + 1;
-                processingTime = processingTime + 1;
-                //for each process i in BH
-                //Update WTi
-                increaseWaitingTime(H1, 0, 1);
-                if(processingTime == q){
-                    newPriority = calculatePV(uP, uP->e, uP->t, eMax);
-                    uP->pV = newPriority;
-                    //re-insert process into BH
-                    Item = createElementType(uP->id,uP->e,timeCounter,newPriority);
-                    Insert(*Item, H1);
-                    //preempt current process
-                    uP = NULL;
-                }
+                timeCounter = timeCounter + q;
+                //for each process i in BH, Update WTi
+                increaseWaitingTime(H1, 0, q);
+                uP->e = uP->e - q;
+                //re-insert process into BH
+                uP->bhCounter++;
+                priority = calculatePriority(uP, uP->e, uP->t, eMax);
+                Item = createElementType(uP->id,uP->e,timeCounter,priority, uP->eProcess, uP->bhCounter);
+                Insert(*Item, H1);
+                //preempt current process
+                uP = NULL;
+            //if e<=q
             }else{
                 timeCounter = timeCounter + uP->e;
-                //for each process i in BH
-                //Update WTi
+                //for each process i in BH, Update WTi
                 increaseWaitingTime(H1, 0, uP->e);
-                completedRoot = insertToList(completedRoot, uP->id, uP->e, uP->t, uP->wt, uP->bhCounter);
-                //release uP
+                uP->e = 0;
+                completedRoot = insertToList(completedRoot, uP->id, uP->eProcess, uP->t, uP->wt, uP->bhCounter);
                 uP = NULL;
             }
+            //enqueue incoming processes by their priority
+            process *iterInput = inputRoot;
+            while(iterInput != NULL){
+                if(iterInput->t <= timeCounter){
+                    priority = calculatePriority(iterInput, iterInput->e, iterInput->t, eMax);
+                    ElementType *Item = createElementType(iterInput->id, iterInput->e, iterInput->t, priority, iterInput->eProcess, iterInput->bhCounter);
+                    Insert(*Item, H1);
+                    deleteNode(&iterInput, iterInput->id);
+                    inputRoot = iterInput;
+                }else{
+                    iterInput = iterInput->nextProcess;
+                }
+            }
+            //calculate priority values
+           // calculatePVForAll(H1, 0, eMax);
             //DeleteMin
             ElementType minItem = DeleteMin(H1);
             //Assigns min process on BH to uP
             uP = insertToList(uP, minItem.id, minItem.e, minItem.t, minItem.wt, minItem.bhCounter);
+            uP->eProcess = minItem.eProcess;
         }
     }
-
     return 0;
 }
 
-ElementType* createElementType(int id, int e, int t, double pValue){
+ElementType* createElementType(int id, int e, int t, double pValue, int eProcess, int bhCounter){
     ElementType *node = malloc(sizeof(ElementType));
     node->id = id;
     node->e = e;
     node->t = t;
+    node->wt = 0;
+    node->eProcess = eProcess;
+    node->bhCounter = bhCounter;
     node->pValue = pValue;
     return node;
 }
@@ -204,6 +160,8 @@ process* insertToList(process *p, int id, int e, int t, int wT, int bhCounter){
     node->t = t;
     node->wt = wT;
     node->bhCounter = bhCounter;
+    node->pV = 0;
+    node->eProcess = e;
     node->nextProcess = NULL;
 
     if(p == NULL){
@@ -328,7 +286,7 @@ int findEMax(process *p){
     return temp;
 }
 
-double calculateC(process *node, int eI, int eMax){
+double cValue(process *node, int eI, int eMax){
     if(node->bhCounter == 0){
         return 1;
     }else{
@@ -340,8 +298,14 @@ double calculateC(process *node, int eI, int eMax){
     }
 }
 
-double calculatePV(process *node, int eI, int t, int eMax){
-        return calculateC(node, eI, eMax)*eI;
+double calculatePriority(process *node, int e, int t, int eMax){
+    //calculate the priority value
+    //  check if there is a process that has the same e value
+    //      if exist take tArrival
+    //      else c(eI)*eI (Implement the c(eI) for first insertion and further insertions).
+
+    //check if there are any same eI
+        return cValue(node, e, eMax)*e;
         //TODO if eI == eJ return tArrival!
 }
 

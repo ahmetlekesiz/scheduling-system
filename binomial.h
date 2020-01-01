@@ -27,6 +27,7 @@
             int t; //arrival time
             int bhCounter;
             double pValue;
+            int eProcess;
             int wt; //waiting time
         }typedef ElementType;
 
@@ -42,5 +43,11 @@
         BinTree printTree(BinTree p, BinTree *r, int i);
         BinTree increaseWaitingTimeBinomialTree(BinTree p, BinTree *r, int i, int increment);
         void increaseWaitingTime(BinQueue H, int i, int increment);
+        void calculatePVForAll(BinQueue H, int i, int eMax);
+        BinTree treeTraversal(BinTree p, BinTree *r, int i, int eMax);
+        double calculateC(ElementType *node, int eI, int eMax);
+        double calculatePV(ElementType *node, int e, int t, int eMax);
+
+
 #endif
 /* END */

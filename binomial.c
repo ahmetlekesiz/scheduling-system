@@ -1,7 +1,9 @@
        #include "binomial.h"
        #include "fatal.h"
-	          
-/* START: fig6_52.txt */
+       #include <math.h>
+
+
+       /* START: fig6_52.txt */
         typedef struct BinNode *Position;
 
         struct BinNode
@@ -305,9 +307,7 @@
                } while (q!=NULL);
            }
            else return NULL;
-           //for (j=0; j<i; j++) t[j]=NULL;
-           printf("\n");
-           printTree(p->LeftChild, r, i);
+           increaseWaitingTimeBinomialTree(p->LeftChild, r, i, increment);
        }
 
         void increaseWaitingTime(BinQueue H, int i, int increment){
@@ -317,6 +317,60 @@
                 increaseWaitingTimeBinomialTree(p2, r2, i, increment);
             }
         };
+
+       double calculateC(ElementType *node, int eI, int eMax){
+           if(node->bhCounter == 0){
+               return 1;
+           }else{
+               double top = 2*eI;
+               double bottom = 3*eMax;
+               double division = top/bottom;
+               double calculation = -pow(division, 3);
+               return 1/exp(calculation);
+           }
+       }
+
+       double calculatePV(ElementType *node, int e, int t, int eMax){
+           //calculate the priority value
+           //  check if there is a process that has the same e value
+           //      if exist take tArrival
+           //      else c(eI)*eI (Implement the c(eI) for first insertion and further insertions).
+
+           //check if there are any same eI
+           return calculateC(node, e, eMax)*e;
+           //TODO if eI == eJ return tArrival!
+       }
+
+        BinTree treeTraversal(BinTree p, BinTree *r, int i, int eMax)
+       {
+           BinTree t[20]={NULL}, q; int j;
+           for ( j=0; j<i; j++ ) t[j]= r[j];
+           i=0;
+           if (p!=NULL) {
+               p->Item.pValue = calculatePV(&p->Item, p->Item.e, p->Item.t, eMax);
+               q=p->NextSibling;
+               j=0;
+               do {
+                   while (q!=NULL) {
+                       q->Item.pValue = calculatePV(&q->Item, q->Item.e, q->Item.t, eMax);
+                       if (q->LeftChild != NULL) { r[i]=q->LeftChild; i++; }
+                       q=q->NextSibling;
+                   }
+                   q=t[j++];
+               } while (q!=NULL);
+           }
+           else return NULL;
+           treeTraversal(p->LeftChild, r, i, eMax);
+       }
+
+        void calculatePVForAll(BinQueue H, int i, int eMax){
+           BinTree p2, r2[20]={NULL};
+           for (int i = 0; i < 12 ; ++i) {
+               p2=H->TheTrees[i];
+               treeTraversal(p2, r2, i, eMax);
+           }
+       };
+
 
        /*
    main()
