@@ -29,7 +29,7 @@ void removeFirstProcess(process **root){
     *root = temp;
 }
 void printList(process *root);
-ElementType* createElementType(int id, int e, int t, double pValue, int eProcess, int bhCounter);
+ElementType* createElementType(int id, int e, int t, double pValue, int wt, int eProcess, int bhCounter);
 int findMaxArrivingTime(process *root);
 process* findProcessByTime(process *root, int t);
 void deleteNode(process **root, int id);
@@ -39,7 +39,7 @@ double calculatePriority(process *node, int e, int t, int eMax);
 
 int main() {
     process *inputRoot = NULL, *uP = NULL, *completedRoot = NULL;
-    int q = 1;
+    int q = 3;
     int eMax = 0;
     inputRoot = readFile("input.txt", inputRoot);
     eMax = findEMax(inputRoot);
@@ -79,7 +79,7 @@ int main() {
                 //re-insert process into BH
                 uP->bhCounter++;
                 priority = calculatePriority(uP, uP->e, uP->t, eMax);
-                Item = createElementType(uP->id,uP->e,timeCounter,priority, uP->eProcess, uP->bhCounter);
+                Item = createElementType(uP->id,uP->e,timeCounter,priority, uP->wt, uP->eProcess, uP->bhCounter);
                 Insert(*Item, H1);
                 //preempt current process
                 uP = NULL;
@@ -97,7 +97,10 @@ int main() {
             while(iterInput != NULL){
                 if(iterInput->t <= timeCounter){
                     priority = calculatePriority(iterInput, iterInput->e, iterInput->t, eMax);
-                    ElementType *Item = createElementType(iterInput->id, iterInput->e, iterInput->t, priority, iterInput->eProcess, iterInput->bhCounter);
+                    ElementType *Item = createElementType(iterInput->id, iterInput->e, iterInput->t, priority, iterInput->wt, iterInput->eProcess, iterInput->bhCounter);
+                    if(Item->t < timeCounter){
+                        Item->wt = timeCounter - Item->t;
+                    }
                     Insert(*Item, H1);
                     deleteNode(&iterInput, iterInput->id);
                     inputRoot = iterInput;
@@ -113,16 +116,17 @@ int main() {
             uP = insertToList(uP, minItem.id, minItem.e, minItem.t, minItem.wt, minItem.bhCounter);
             uP->eProcess = minItem.eProcess;
         }
+        printf("kjk");
     }
     return 0;
 }
 
-ElementType* createElementType(int id, int e, int t, double pValue, int eProcess, int bhCounter){
+ElementType* createElementType(int id, int e, int t, double pValue, int wt, int eProcess, int bhCounter){
     ElementType *node = malloc(sizeof(ElementType));
     node->id = id;
     node->e = e;
     node->t = t;
-    node->wt = 0;
+    node->wt = wt;
     node->eProcess = eProcess;
     node->bhCounter = bhCounter;
     node->pValue = pValue;
