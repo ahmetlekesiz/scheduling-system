@@ -38,93 +38,26 @@ double cValue(process *node, int eI, int eMax);
 double calculatePriority(process *node, int e, int t, int eMax);
 double averageWT(process *completed);
 process* callForQ(int q, BinQueue H, ElementType *Item);
+void printAll(process* completedRoot, BinQueue H1, ElementType *Item, int q);
 
 int main() {
-    process *inputRoot = NULL, *uP = NULL, *completedRoot = NULL;
-    int q = 1;
-    int eMax = 0;
-    inputRoot = readFile("input.txt", inputRoot);
-    eMax = findEMax(inputRoot);
-
+    process *completedRoot = NULL;
     BinQueue H1 = Initialize();
     ElementType *Item;
 
-    int timeCounter = 0;
-    int maxArrivingTime = 0;
-    double priority = 0;
+    printAll(completedRoot, H1, Item, 1);
+    printAll(completedRoot, H1, Item, 2);
+    printAll(completedRoot, H1, Item, 3);
 
-    while(inputRoot != NULL){
-        //Find the next process
-        process *nextProcess = NULL;
-        maxArrivingTime = findMaxArrivingTime(inputRoot);
-        while(timeCounter <= maxArrivingTime){
-            nextProcess = findProcessByTime(inputRoot, timeCounter);
-            if(nextProcess != NULL){
-                break;
-            }else{
-                timeCounter++;
-            }
-        }
-        //Put the process to uP
-        if(nextProcess != NULL){
-            uP = insertToList(uP, nextProcess->id, nextProcess->e, nextProcess->t, nextProcess->wt, nextProcess->bhCounter);
-            deleteNode(&inputRoot, nextProcess->id);
-        }
-        //while uP is allocated
-        while(uP != NULL){
-            //if e>q
-            if(uP->e > q){
-                timeCounter = timeCounter + q;
-                //for each process i in BH, Update WTi
-                increaseWaitingTime(H1, 0, q);
-                uP->e = uP->e - q;
-                //re-insert process into BH
-                uP->bhCounter++;
-                priority = calculatePriority(uP, uP->e, uP->t, eMax);
-                Item = createElementType(uP->id,uP->e,timeCounter,priority, uP->wt, uP->eProcess, uP->bhCounter);
-                Insert(*Item, H1);
-                //preempt current process
-                uP = NULL;
-            //if e<=q
-            }else{
-                timeCounter = timeCounter + uP->e;
-                //for each process i in BH, Update WTi
-                increaseWaitingTime(H1, 0, uP->e);
-                uP->e = 0;
-                completedRoot = insertToList(completedRoot, uP->id, uP->eProcess, uP->t, uP->wt, uP->bhCounter);
-                uP = NULL;
-            }
-            //enqueue incoming processes by their priority
-            process *iterInput = inputRoot;
-            while(iterInput != NULL){
-                if(iterInput->t <= timeCounter){
-                    priority = calculatePriority(iterInput, iterInput->e, iterInput->t, eMax);
-                    ElementType *Item = createElementType(iterInput->id, iterInput->e, iterInput->t, priority, iterInput->wt, iterInput->eProcess, iterInput->bhCounter);
-                    if(Item->t < timeCounter){
-                        Item->wt = timeCounter - Item->t;
-                    }
-                    Insert(*Item, H1);
-                    deleteNode(&iterInput, iterInput->id);
-                    inputRoot = iterInput;
-                }else{
-                    iterInput = iterInput->nextProcess;
-                }
-            }
-            //calculate priority values
-           // calculatePVForAll(H1, 0, eMax);
-            //DeleteMin
-            if(H1->CurrentSize != 0){
-                ElementType minItem = DeleteMin(H1);
-                //Assigns min process on BH to uP
-                uP = insertToList(uP, minItem.id, minItem.e, minItem.t, minItem.wt, minItem.bhCounter);
-                uP->eProcess = minItem.eProcess;
-            }
-        }
-    }
+    return 0;
+}
+
+void printAll(process* completedRoot, BinQueue H1, ElementType *Item, int q){
+    printf("\n***** FOR Q VALUE OF %d *****\n", q);
+    completedRoot = callForQ(q, H1, Item);
     printList(completedRoot);
     double awt = averageWT(completedRoot);
-    printf("\nAWT = %f", awt);
-    return 0;
+    printf("\nAWT = %f\n", awt);
 }
 
 ElementType* createElementType(int id, int e, int t, double pValue, int wt, int eProcess, int bhCounter){
@@ -162,7 +95,6 @@ int findTMax(process *root){
     return tMax;
 }
 
-//TODO eksik parametleri ekle. Örne?in: waiting time.
 process* insertToList(process *p, int id, int e, int t, int wT, int bhCounter){
     process *node = malloc(sizeof(process));
     node->id = id;
