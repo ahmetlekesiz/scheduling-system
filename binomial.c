@@ -370,33 +370,3 @@
                treeTraversal(p2, r2, i, eMax);
            }
        };
-
-
-       /*
-   main()
-   {
-     BinQueue H1, H2;
-     BinTree p, r[20]={NULL};
-     ElementType Item;
-     char ch;
-     int i;
-     H1 = Initialize( );
-
-     do {
-       printf("choice: \n"); scanf("%c",&ch);
-       switch (ch) {
-         case 'i': Item.pValue=(0.0001)*(rand()%10000);
-         Insert(Item, H1); printf("Item=%5.1lf",Item); if (IsEmpty( H1 )) printf("empty!");
-                   break;
-         case 'd': if (!IsEmpty( H1 )) Item=DeleteMin( H1 );
-                   break;
-         case 'p': for (i=0; i<MaxTrees; i++) {
-                     p=H1->TheTrees[i];
-                     printTree(p, r, 0); printf("/\n");
-                   }
-                   break;
-         case 'x': ;
-       }
-     }	while ( ch!='x');
-   }                                           */
-/* END */

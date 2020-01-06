@@ -18,46 +18,81 @@ struct process{
     struct process *nextProcess;
 }typedef process;
 
+struct qValues{
+    int qId;
+    double awt;
+    struct qValues *nextQ;
+}typedef qValues;
+
 process* insertToList(process *p, int id, int e, int t, int wT, int bhCounter);
 process* splitString(char *str, process *p);
-process* readFile(char *file, process *p);
+process* readFile(process *p);
 int findEMax(process *p);
-void removeFirstProcess(process **root){
-    process* temp = *root;
-    temp = temp->nextProcess;
-    free(*root);
-    *root = temp;
-}
 void printList(process *root);
 ElementType* createElementType(int id, int e, int t, double pValue, int wt, int eProcess, int bhCounter);
 int findMaxArrivingTime(process *root);
 process* findProcessByTime(process *root, int t);
 void deleteNode(process **root, int id);
-int numberInputList(process *root);
 double cValue(process *node, int eI, int eMax);
 double calculatePriority(process *node, int e, int t, int eMax);
-double averageWT(process *completed);
+double sumWT(process *completed);
 process* callForQ(int q, BinQueue H, ElementType *Item);
-void printAll(process* completedRoot, BinQueue H1, ElementType *Item, int q);
+double printAll(process* completedRoot, BinQueue H1, ElementType *Item, int q);
+double sumProcess(process *completed);
+qValues* insertToQ(qValues *q, int qId, double awt);
+void findQMin(qValues *q);
 
 int main() {
     process *completedRoot = NULL;
     BinQueue H1 = Initialize();
     ElementType *Item;
+    qValues *qRoot = NULL;
+    double awt;
 
-    printAll(completedRoot, H1, Item, 1);
-    printAll(completedRoot, H1, Item, 2);
-    printAll(completedRoot, H1, Item, 3);
+    int qValue;
+    printf("Please enter the last value for q that you want to calculate(For example: 10). \nThe program will calculate the waiting time for all process and show you the most optimize value of q.\n");
+    scanf("%d", &qValue);
+
+    for (int i = 1; i <= qValue; ++i) {
+        awt = printAll(completedRoot, H1, Item, i);
+        qRoot = insertToQ(qRoot, i, awt);
+    }
+
+    printf("\n*** Result ***\n");
+    findQMin(qRoot);
 
     return 0;
 }
 
-void printAll(process* completedRoot, BinQueue H1, ElementType *Item, int q){
-    printf("\n***** FOR Q VALUE OF %d *****\n", q);
+void findQMin(qValues *q){
+    if(q != NULL){
+        int counter = 1;
+        int qValue = 1;
+        double awtMin = q->awt;
+        qValues *iter = q;
+        while(iter != NULL){
+            if(iter->awt < awtMin){
+                awtMin = iter->awt;
+                qValue = counter;
+            }
+            iter = iter->nextQ;
+            counter++;
+        }
+        printf("Most optimize q value is q=%d with AWT=%0.2f\n", qValue, awtMin);
+    }else{
+        printf("List is null!");
+    }
+};
+
+double printAll(process* completedRoot, BinQueue H1, ElementType *Item, int q){
+    printf("\nq=%d\n", q);
     completedRoot = callForQ(q, H1, Item);
     printList(completedRoot);
-    double awt = averageWT(completedRoot);
-    printf("\nAWT = %f\n", awt);
+    double sum = sumWT(completedRoot);
+    double processCounter = sumProcess(completedRoot);
+    double awt = sum / processCounter;
+    printf("AWT = %.0f/%.0f = %.2f\n", sum, processCounter, awt);
+    return awt;
 }
 
 ElementType* createElementType(int id, int e, int t, double pValue, int wt, int eProcess, int bhCounter){
@@ -81,18 +116,6 @@ process* findProcessByTime(process *root, int t){
         iter = iter->nextProcess;
     }
     return NULL;
-}
-
-int findTMax(process *root){
-    process *iter = root;
-    int tMax = 0;
-    while(iter != NULL){
-        if(iter->t > tMax){
-            tMax = iter->t;
-        }
-        iter = iter->nextProcess;
-    }
-    return tMax;
 }
 
 process* insertToList(process *p, int id, int e, int t, int wT, int bhCounter){
@@ -127,33 +150,47 @@ process* insertToList(process *p, int id, int e, int t, int wT, int bhCounter){
     }
 }
 
-void deleteNode(process **root, int id){
-    process *temp = *root, *prev;
+qValues* insertToQ(qValues *q, int qId, double awt){
+    qValues *node = malloc(sizeof(process));
+    node->qId = qId;
+    node->awt = awt;
+    node->nextQ = NULL;
 
-    // If head node itself holds the key to be deleted
-    if (temp != NULL && temp->id == id)
+    if(q == NULL){
+        return node;
+    }else{
+        qValues *iter = q;
+        while(iter->nextQ != NULL){
+            iter = iter->nextQ;
+        }
+        iter->nextQ = node;
+        return q;
+    }
+}
+
+void deleteNode(process **root, int id){
+    process *iter = *root, *prev;
+
+    if (iter != NULL && iter->id == id)
     {
-        *root = temp->nextProcess;   // Changed head
-        free(temp);               // free old head
+        *root = iter->nextProcess;
+        free(iter);
         return;
     }
 
-    // Search for the key to be deleted, keep track of the
-    // previous node as we need to change 'prev->next'
-    while (temp != NULL && temp->id != id)
+    while (iter != NULL && iter->id != id)
     {
-        prev = temp;
-        temp = temp->nextProcess;
+        prev = iter;
+        iter = iter->nextProcess;
     }
 
-    // If key was not present in linked list
-    if (temp == NULL) return;
+    if (iter == NULL){
+        return;
+    }
 
-    // Unlink the node from linked list
-    prev->nextProcess = temp->nextProcess;
+    prev->nextProcess = iter->nextProcess;
 
-    free(temp);  // Free memory
-
+    free(iter);
 }
 
 void printList(process *root){
@@ -178,10 +215,10 @@ int findMaxArrivingTime(process *root){
     return maxT;
 }
 
-process* readFile(char *file, process *p){
+process* readFile(process *p){
     FILE *fp = fopen("input.txt", "r");
     if(fp == NULL) {
-        perror("Unable to open file!");
+        perror("I could not open the file!");
         exit(1);
     }
 
@@ -197,7 +234,6 @@ process* readFile(char *file, process *p){
 
 process* splitString(char *str, process *p){
     int counter = 0;
-    int init_size = strlen(str);
     char delim[] = " ";
     int id = 0;
     int e = 0;
@@ -226,8 +262,8 @@ process* splitString(char *str, process *p){
     return p;
 }
 
-//finding eMax value for beginning of program.
 int findEMax(process *p){
+    //finding eMax value for beginning of program.
     int temp = 0;
     process *iter = p;
     while(iter != NULL){
@@ -256,37 +292,32 @@ double calculatePriority(process *node, int e, int t, int eMax){
     //  check if there is a process that has the same e value
     //      if exist take tArrival
     //      else c(eI)*eI (Implement the c(eI) for first insertion and further insertions).
-
-    //check if there are any same eI
         return cValue(node, e, eMax)*e;
-        //TODO if eI == eJ return tArrival!
 }
 
-int numberInputList(process *root){
-    process *iter = root;
-    int counter = 0;
-    while(iter != NULL){
-        counter++;
-        iter = iter->nextProcess;
-    }
-    return counter;
-}
-
-double averageWT(process *completed){
+double sumWT(process *completed){
     double sum = 0;
-    double processCounter = 0;
     process *iter = completed;
     while(iter != NULL){
         sum = sum + iter->wt;
+        iter = iter->nextProcess;
+    }
+    return sum;
+}
+
+double sumProcess(process *completed){
+    double processCounter = 0;
+    process *iter = completed;
+    while(iter != NULL){
         processCounter++;
         iter = iter->nextProcess;
     }
-    return sum/processCounter;
+    return processCounter;
 }
 
 process* callForQ(int q, BinQueue H1, ElementType *Item){
     process *inputRoot = NULL, *uP = NULL, *completedRoot = NULL;
-    inputRoot = readFile("input.txt", inputRoot);
+    inputRoot = readFile(inputRoot);
     int eMax = findEMax(inputRoot);
     int timeCounter = 0;
     int maxArrivingTime = 0;
@@ -348,9 +379,6 @@ process* callForQ(int q, BinQueue H1, ElementType *Item){
                     iterInput = iterInput->nextProcess;
                 }
             }
-            //calculate priority values
-            // calculatePVForAll(H1, 0, eMax);
-            //DeleteMin
             if(H1->CurrentSize != 0){
                 ElementType minItem = DeleteMin(H1);
                 //Assigns min process on BH to uP
