@@ -81,16 +81,6 @@
                 FatalError( "Out of space!!!" );
             NewNode->LeftChild = NewNode->NextSibling = NULL;
 			NewNode->Item = Item;
-            /*NewNode->mn.p = m.p;
-			NewNode->mn.sid.scalar = m.sid.scalar;
-			NewNode->mn.aid.d3act = m.aid.d3act;
-			NewNode->mn.nexts.scalar = m.nexts.scalar;
-			NewNode->mn.reward = m.reward;
-			NewNode->mn.last=m.last;
-			for (i=0; i < max_act_const; i++) {
-			  NewNode->mn.from[i].s=m.from[i].s;
-			  NewNode->mn.from[i].a=m.from[i].a;
-			}*/
 
             OneItem = Initialize( );
             OneItem->CurrentSize = 1;
@@ -99,7 +89,6 @@
             return Merge( H, OneItem );
         }
 
-/* START: fig6_56.txt */
         ElementType 
         DeleteMin( BinQueue H )
         {
@@ -114,11 +103,6 @@
             {
                 Error( "Empty binomial queue" );
 				MinItem.pValue=-Infinity;
-				
-			//  for (i=0; i < max_act_const; i++) {
-			//    MinItem.from[i].s=-1;
-			//    MinItem->mn.from[i].a=m.from[i].a;
-			//  }
                 return MinItem;
             }
 
@@ -155,7 +139,6 @@
             Merge( H, DeletedQueue );
             return MinItem;
         }
-/* END */
 
         ElementType
         FindMin( BinQueue H )
@@ -205,12 +188,6 @@
             T1->LeftChild = T2;
             return T1;
         }
-/* END */
-
-/* START: fig6_55.txt */
-        /* Merge two binomial queues */
-        /* Not optimized for early termination */
-        /* H1 contains merged result */
 
         BinQueue
         Merge( BinQueue H1, BinQueue H2 )
@@ -335,10 +312,8 @@
            //  check if there is a process that has the same e value
            //      if exist take tArrival
            //      else c(eI)*eI (Implement the c(eI) for first insertion and further insertions).
-
            //check if there are any same eI
            return calculateC(node, e, eMax)*e;
-           //TODO if eI == eJ return tArrival!
        }
 
         BinTree treeTraversal(BinTree p, BinTree *r, int i, int eMax)
@@ -363,10 +338,3 @@
            treeTraversal(p->LeftChild, r, i, eMax);
        }
 
-        void calculatePVForAll(BinQueue H, int i, int eMax){
-           BinTree p2, r2[20]={NULL};
-           for (int i = 0; i < 12 ; ++i) {
-               p2=H->TheTrees[i];
-               treeTraversal(p2, r2, i, eMax);
-           }
-       };

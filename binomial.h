@@ -6,12 +6,6 @@
 		#define MaxTrees (12)   /* Stores 2^9 -1 items */
         #define Capacity (4095)
 
-    //  #define MaxTrees (14)   /* Stores 2^14 -1 items */
-    //  #define Capacity (16383)
-		
-	//	#define MaxTrees (30)   /* Stores 2^30 -1 items */
-    //  #define Capacity (1073741823)
-
         struct BinNode;
         typedef struct BinNode *BinTree;
         struct Collection{
@@ -43,7 +37,6 @@
         BinTree printTree(BinTree p, BinTree *r, int i);
         BinTree increaseWaitingTimeBinomialTree(BinTree p, BinTree *r, int i, int increment);
         void increaseWaitingTime(BinQueue H, int i, int increment);
-        void calculatePVForAll(BinQueue H, int i, int eMax);
         BinTree treeTraversal(BinTree p, BinTree *r, int i, int eMax);
         double calculateC(ElementType *node, int eI, int eMax);
         double calculatePV(ElementType *node, int e, int t, int eMax);
